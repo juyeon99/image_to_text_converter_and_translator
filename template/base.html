@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이미지 텍스트 변환기</title>
+    <script>
+        // example image: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRM-w7ZrDdpVNic2LoKHpZjugDvyl0ckVFBWQ&s
+        async function submitForm() {
+            const url = document.getElementById('url').value;
+
+            const imgElement = document.getElementById('imageDisplay');
+            imgElement.src = '';
+            imgElement.style.display = 'none';
+            
+            document.getElementById('originalText').innerText = 'Loading...'
+            document.getElementById('translatedText').innerText = ''
+
+            await fetch('/convert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.detail || 'Unknown error');
+                    });
+                }
+                return response.json();
+            })
+            .then(resultData => {
+                const imgElement = document.getElementById('imageDisplay');
+                imgElement.src = url;
+                imgElement.style.display = 'block';
+                
+                document.getElementById('originalText').innerText = 'Original Text: ' + resultData.original_text;
+                document.getElementById('translatedText').innerText = 'Translated Text: ' + resultData.translated_text;
+            });
+
+            // const data = await response.json();
+            
+            // document.getElementById('originalText').innerText = 'Original Text: ' + data.originalText;
+            // document.getElementById('translatedText').innerText = 'Translated Text: ' + data.translatedText;
+        }
+    </script>
+</head>
+<body>
+    <h1>이미지 텍스트 변환기</h1>
+    <input type="text" id="url" placeholder="Enter image URL" required>
+    <button onclick="submitForm()">Translate</button>
+
+    <img id="imageDisplay" src="" alt="Image" style="display:none; max-width: 500px; margin-top: 20px; margin-bottom: 20px;" />
+    
+    <h2 id="originalText"></h2>
+    <h2 id="translatedText"></h2>
+</body>
+</html>
